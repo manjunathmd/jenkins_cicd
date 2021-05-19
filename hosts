@@ -1,0 +1,12 @@
+[dev]
+server1
+server2
+
+[prod]
+server3
+
+[jenkin]
+jenkins
+
+[app]
+application

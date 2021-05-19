@@ -1,0 +1,56 @@
+---
+ - name: Configuring Java in the machine in Jenkins server
+   hosts: jenkins
+   vars_files:
+    - jenkin_var.yml
+   tasks: 
+    - name: Installing Java  
+      yum:
+        name: java-{{java_version}}
+        state: present
+    - name: downloading jenkins to repository
+      get_url:
+        url: "https://pkg.jenkins.io/redhat/jenkins.repo"
+        dest: "/etc/yum.repos.d/jenkins.repoi"
+
+    - name: "Import Jenkins key"
+      command: "rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key"
+      changed_when: false
+   
+    - name: installing jenkins
+      yum:
+        name: jenkins
+        state: present
+
+    - name: "Start Jenkins"
+      service: name="jenkins" state="enabled"
+      service: name="jenkins" state="started"
+
+    - name: Change file ownership, group and permissions
+      file:
+        path: '{{item}}'
+        owner: root
+        group: root
+      with_items:
+          - /var/lib/jenkins/
+          - /var/cache/jenkins/
+          - /var/log/jenkins
+        
+    - name: downloading maven
+      get_url:
+        url: http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo
+        dest: /etc/yum.repos.d/epel-apache-maven.repo
+
+    - name: substituing
+      shell: sed -i s/\$releasever/6/g /etc/yum.repos.d/epel-apache-maven.repo
+
+    - name: installing maven
+      yum:
+        name: ['apache-maven', 'git']
+        state: present
+
+    - name: installing jenkins
+      shell: sudo amazon-linux-extras install epel -y     
+    - yum:
+        name: ansible
+        state: present

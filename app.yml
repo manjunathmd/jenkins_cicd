@@ -1,0 +1,36 @@
+---
+ - name: intalling Tomcat
+   hosts: server2
+   become: yes
+   vars_files: 
+    - jenkin_var.yml
+
+   tasks:
+    - name: Installing Java
+      yum:
+        name: java-{{java_version}}
+        state: present
+
+    - name: downloading Tomcat
+      file:
+        path: /tmp/tomcat8
+        state: directory
+        mode: '0755'
+
+    - unarchive: 
+        src: http://www-eu.apache.org/dist/tomcat/tomcat-8/v{{Version}}/bin/apache-tomcat-{{Version}}.tar.gz
+        dest: /tmp/tomcat8
+        remote_src: yes
+
+    - name: editing default port
+      replace:
+        path: /tmp/tomcat8/apache-tomcat-8.5.66/conf/server.xml
+        regexp: '^#8080'
+        replace: '80'
+
+    - name: Configure Tomcat users
+      template: src=tomcat-users.xml dest=/tmp/share/apache-tomcat-8.5.66/conf/
+      notify: restart_tomcat
+
+
+
